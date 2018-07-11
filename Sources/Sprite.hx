@@ -11,6 +11,7 @@ import kha.Image;
 import kha.System;
 import kha.graphics4.TextureUnit;
 import kha.graphics4.BlendingFactor;
+import kha.graphics4.BlendingOperation;
 import kha.graphics4.PipelineState;
 import kha.graphics4.VertexStructure;
 import kha.graphics4.VertexBuffer;
@@ -44,6 +45,7 @@ class Sprite
 	
 // An array of vertices to form a cube
 	static var vertices:Array<Float> = [
+
 	    -1.0, -1.0, 0.0,
 		-1.0, 1.0,0.0,
 		 1.0, 1.0,0.0,
@@ -53,6 +55,7 @@ class Sprite
 	];
 	// Array of texture coords for each cube vertex
 	static var uvs:Array<Float> = [
+
 	    0.0, 0.0, 
 		0.0, 1.0, 
 		1.0, 1.0, 
@@ -70,8 +73,10 @@ class Sprite
 		];
 		
 		
-	public function new() 
+	public function new(_x:Float,_y:Float) 
 	{
+		Position.x = _x;
+		Position.y = _y;
 		Assets.loadEverything(loadingFinished);
 	}
 	
@@ -94,7 +99,9 @@ class Sprite
 		pipeline.fragmentShader = Shaders.simple_frag;
 		// Set depth mode
         pipeline.depthWrite = true;
-        pipeline.depthMode = CompareMode.Less;
+        pipeline.depthMode = CompareMode.Always;
+		//pipeline.alphaBlendOperation = BlendingOperation.ReverseSubtract;
+		
 		pipeline.blendDestination = BlendingFactor.DestinationAlpha;
 		//pipeline.cullMode = CullMode.CounterClockwise;
 		pipeline.compile();
@@ -128,6 +135,7 @@ class Sprite
 		mvp = mvp.multmat(view);
 		mvp = mvp.multmat(model);
 
+		//vertices = vertices * Position;
 		// Create vertex buffer
 		vertexBuffer = new VertexBuffer(
 			Std.int(vertices.length / 3), // Vertex count - 3 floats per vertex
@@ -138,8 +146,8 @@ class Sprite
 		// Copy vertices and uvs to vertex buffer
 		var vbData = vertexBuffer.lock();
 		for (i in 0...Std.int(vbData.length / structureLength)) {
-			vbData.set(i * structureLength, vertices[i * 3]);
-			vbData.set(i * structureLength + 1, vertices[i * 3 + 1]);
+			vbData.set(i * structureLength, vertices[i * 3]+Position.x);
+			vbData.set(i * structureLength + 1, vertices[i * 3 + 1]+Position.y);
 			vbData.set(i * structureLength + 2, vertices[i * 3 + 2]);
 			vbData.set(i * structureLength + 3, uvs[i * 2]);
 			vbData.set(i * structureLength + 4, uvs[i * 2 + 1]);
@@ -192,7 +200,7 @@ class Sprite
 
 		// Draw!
 		g.drawIndexedVertices();
-		trace('i');
+		//trace('i');
 
     }
 	

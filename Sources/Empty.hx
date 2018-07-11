@@ -46,10 +46,10 @@ class Empty {
 
 	function loadingFinished() {
 		sprite = new Array<Sprite>();
-		sprite.push(new Sprite());
-		sprite.push(new Sprite());
-		sprite.push(new Sprite());
-		sprite.push(new Sprite());
+		for (i in 0...10)
+		{
+		sprite.push(new Sprite(i * 0.2, -1));
+		}
     }
 
 	public function render(frame:Framebuffer) {
