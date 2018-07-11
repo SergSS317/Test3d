@@ -12,6 +12,10 @@ out vec4 fragColor;
 void main() {
 
 	// Output color = color of the texture at the specified UV
+	
+	//fragColor = vec4(color.rgb, texture(myTextureSampler, vUV).r * color.a);
+	
+	
 	vec4 texcolor = texture(myTextureSampler, vUV) * color;
 	texcolor *= color.a;
 	

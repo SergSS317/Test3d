@@ -8,6 +8,7 @@ import kha.Assets;
 import kha.Image;
 import kha.System;
 import kha.graphics4.TextureUnit;
+import kha.graphics4.BlendingFactor;
 import kha.graphics4.PipelineState;
 import kha.graphics4.VertexStructure;
 import kha.graphics4.VertexBuffer;
@@ -35,43 +36,8 @@ import kha.math.FastVector3;
 }*/
 
 class Empty {
-
-	// An array of vertices to form a cube
-	static var vertices:Array<Float> = [
-	    -1.0, -1.0, 0.0,
-		-1.0, 1.0,0.0,
-		 1.0, 1.0,0.0,
-		-1.0, -1.0, 0.0,
-		1.0, -1.0,0.0,
-		1.0, 1.0, 0.0
-	];
-	// Array of texture coords for each cube vertex
-	static var uvs:Array<Float> = [
-	    0.0, 0.0, 
-		0.0, 1.0, 
-		1.0, 1.0, 
-		0.0, 0.0, 
-		1.0, 0.0, 
-		1.0, 1.0
-	];
-	static var colors:Array<Float> = [
-	    1.0,  0.0,  0.0, 1.2,
-		1.0,  0.0,  0.0, 1.2,
-		1.0,  0.0,  0.0, 1.2,
-		0.0,  1.0,  0.0, 0.2,
-		0.0,  1.0,  0.0, 0.2,
-		0.0,  1.0,  0.0, 0.2,
-		];
-
-	var vertexBuffer:VertexBuffer;
-	var indexBuffer:IndexBuffer;
-	var pipeline:PipelineState;
-
-	var mvp:FastMatrix4;
-	var mvpID:ConstantLocation;
-
-	var textureID:TextureUnit;
-    var image:Image;
+	var sprite:Array<Sprite>;
+	
 
     public function new() {
     	// Load all assets defined in khafile.js
@@ -79,98 +45,11 @@ class Empty {
     }
 
 	function loadingFinished() {
-		// Define vertex structure
-		var structure = new VertexStructure();
-        structure.add("pos", VertexData.Float3);
-        structure.add("uv", VertexData.Float2);
-		structure.add("color", VertexData.Float4);
-        // Save length - we store position and uv data
-        var structureLength = 9;
-
-        // Compile pipeline state
-		// Shaders are located in 'Sources/Shaders' directory
-        // and Kha includes them automatically
-		pipeline = new PipelineState();
-		pipeline.inputLayout = [structure];
-		pipeline.vertexShader = Shaders.simple_vert;
-		pipeline.fragmentShader = Shaders.simple_frag;
-		// Set depth mode
-        pipeline.depthWrite = true;
-        pipeline.depthMode = CompareMode.Less;
-		//pipeline.cullMode = CullMode.CounterClockwise;
-		pipeline.compile();
-
-		// Get a handle for our "MVP" uniform
-		mvpID = pipeline.getConstantLocation("MVP");
-
-		// Get a handle for texture sample
-		textureID = pipeline.getTextureUnit("myTextureSampler");
-
-		// Texture
-		image = Assets.images.Light9;
-
-		// Projection matrix: 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-		var projection = FastMatrix4.perspectiveProjection(45.0, 4.0 / 3.0, 0.1, 100.0);
-		// Or, for an ortho camera
-		//var projection = FastMatrix4.orthogonalProjection(-10.0, 10.0, -10.0, 10.0, 0.0, 100.0); // In world coordinates
-		
-		// Camera matrix
-		var view = FastMatrix4.lookAt(new FastVector3(0, 0, 3), // Camera is at (4, 3, 3), in World Space
-								  new FastVector3(0, 0, 0), // and looks at the origin
-								  new FastVector3(0, 1, 0) // Head is up (set to (0, -1, 0) to look upside-down)
-		);
-
-		// Model matrix : an identity matrix (model will be at the origin)
-		var model = FastMatrix4.identity();
-		// Our ModelViewProjection : multiplication of our 3 matrices
-		// Remember, matrix multiplication is the other way around
-		mvp = FastMatrix4.identity();
-		mvp = mvp.multmat(projection);
-		mvp = mvp.multmat(view);
-		mvp = mvp.multmat(model);
-
-		// Create vertex buffer
-		vertexBuffer = new VertexBuffer(
-			Std.int(vertices.length / 3), // Vertex count - 3 floats per vertex
-			structure, // Vertex structure
-			Usage.StaticUsage // Vertex data will stay the same
-		);
-
-		// Copy vertices and uvs to vertex buffer
-		var vbData = vertexBuffer.lock();
-		for (i in 0...Std.int(vbData.length / structureLength)) {
-			vbData.set(i * structureLength, vertices[i * 3]);
-			vbData.set(i * structureLength + 1, vertices[i * 3 + 1]);
-			vbData.set(i * structureLength + 2, vertices[i * 3 + 2]);
-			vbData.set(i * structureLength + 3, uvs[i * 2]);
-			vbData.set(i * structureLength + 4, uvs[i * 2 + 1]);
-			vbData.set(i * structureLength + 5, colors[i * 4]);
-			vbData.set(i * structureLength + 6, colors[i * 4 + 1]);
-			vbData.set(i * structureLength + 7, colors[i * 4 + 2]);
-			vbData.set(i * structureLength + 8, colors[i * 4 + 3]);
-		}
-		vertexBuffer.unlock();
-
-		// A 'trick' to create indices for a non-indexed vertex data
-		var indices:Array<Int> = [];
-		for (i in 0...Std.int(vertices.length / 3)) {
-			indices.push(i);
-		}
-
-		// Create index buffer
-		indexBuffer = new IndexBuffer(
-			indices.length, // Number of indices for our cube
-			Usage.StaticUsage // Index data will stay the same
-		);
-		
-		// Copy indices to index buffer
-		var iData = indexBuffer.lock();
-		for (i in 0...iData.length) {
-			iData[i] = indices[i];
-		}
-		indexBuffer.unlock();
-		
-		System.notifyOnRender(render);
+		sprite = new Array<Sprite>();
+		sprite.push(new Sprite());
+		sprite.push(new Sprite());
+		sprite.push(new Sprite());
+		sprite.push(new Sprite());
     }
 
 	public function render(frame:Framebuffer) {
@@ -182,23 +61,10 @@ class Empty {
 
         // Clear screen
 		g.clear(Color.fromFloats(0.0, 0.0, 0.3), 1.0);
-
-		// Bind data we want to draw
-		g.setVertexBuffer(vertexBuffer);
-		g.setIndexBuffer(indexBuffer);
-
-		// Bind state we want to draw with
-		g.setPipeline(pipeline);
-
-		// Set our transformation to the currently bound shader, in the "MVP" uniform
-		g.setMatrix(mvpID, mvp);
-
-		// Set texture
-		g.setTexture(textureID, image);
-		//g.setTextureParameters(textureID, kha.graphics4.TextureAddressing.Clamp, kha.graphics4.TextureAddressing.Clamp, kha.graphics4.TextureFilter.LinearFilter, kha.graphics4.TextureFilter.LinearFilter, kha.graphics4.MipMapFilter.NoMipFilter);
-
-		// Draw!
-		g.drawIndexedVertices();
+		for (sprt in sprite)
+		{
+		sprt.render(g);
+		}
 
 		// End rendering
 		g.end();
